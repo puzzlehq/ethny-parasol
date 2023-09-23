@@ -1,3 +1,6 @@
 [workspace]
 resolver = "2"
 members = ["bindings", "app"]
+
+[patch.crates-io]
+sunscreen = { path  = "/Users/darvishkamalia/Desktop/Sunscreen/sunscreen" }

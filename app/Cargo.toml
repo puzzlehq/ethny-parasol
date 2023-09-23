@@ -1,5 +1,5 @@
 [package]
-name = "counter-cli"
+name = "sunscreen_ballot"
 version = "0.1.0"
 edition = "2021"
 description = "A CLI for interacting with the Counter contract on Parasol"
@@ -12,4 +12,19 @@ clap = { version = "4.3", features = ["derive"] }
 ethers = { version = "2", default-features = false, features = ["rustls"] }
 eyre = "0.6"
 sunscreen_web3 = { git = "https://github.com/Sunscreen-tech/sunscreen_web3" }
+sunscreen = "0.8.0"
 tokio = { version = "1.19", features = ["macros", "rt-multi-thread"] }
+uniffi = { git = "https://github.com/mozilla/uniffi-rs.git", features = ["cli"] }
+
+[build-dependencies]
+uniffi = { git = "https://github.com/mozilla/uniffi-rs.git", features = ["build"] }
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "uniffi-bindgen.rs"
+
+[lib]
+doctest = false
+crate-type = ["staticlib"]
+
+

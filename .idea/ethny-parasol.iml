@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/app/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/bindings/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/benchmarks/bfv_zkp/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/benchmarks/cannonical_norm_noise_model/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/emsdk/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/amm/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/bigint/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/calculator_fractional/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/calculator_rational/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/chi_sq/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/dot_prod/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/mean_variance/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/ordering_zkp/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/pir/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/polynomial_zkp/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/simple_multiply/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/examples/sudoku_zkp/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/logproof/benches" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/logproof/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/logproof/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/seal_fhe/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/seal_fhe/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen/benches" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_backend/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_bulletproofs/benches" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_bulletproofs/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_bulletproofs/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_compiler_common/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_compiler_macros/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_curve25519/benches" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_curve25519/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_fhe_program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_math/benches" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_math/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_math_macros/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_runtime/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/Sunscreen/sunscreen_zkp_backend/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/Sunscreen/target" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
