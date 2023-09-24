@@ -18,7 +18,7 @@ use ethers::utils::{__serde_json, serialize};
 use ethers::utils::__serde_json::{from_str, to_string};
 use ethers::utils::hex::ToHex;
 use eyre::{bail, Result};
-use sunscreen::types::bfv::Unsigned;
+use sunscreen::types::bfv::{Unsigned, Unsigned64};
 use sunscreen::types::TryFromPlaintext;
 use sunscreen_web3::{
     testnet::parasol::{generate_keys, PARASOL, RUNTIME},
@@ -202,7 +202,14 @@ pub async fn submit_votes(contract_address: String,
         ) -> String {
     let keys = KeyStore::init(public_key, private_key, wallet_key).expect("failed to make keys");
     let ballot = keys.contract(Address::from_str(&contract_address).expect("no string")).expect("problem");
-    let converted = votes.iter().map(|&x| Bytes::from(x.to_be_bytes())).collect::<Vec<_>>();
+    let mut converted: Vec<Bytes> = vec![];
+    let public_key_bytes = ballot.get_public_key().call().await.expect("no public key");
+    let public_key = PublicKey::from_bytes(&public_key_bytes).expect("weird public key");
+    for vote in votes {
+        let encrypt: Ciphertext = RUNTIME.encrypt(Unsigned64::from(vote), &public_key).expect("Could not encrypt");
+        converted.push(encrypt.as_bytes().expect("Could not encode into bytes"));
+    }
+
     let result = ballot.vote(converted).send().await.expect("some ").await.expect(" problem ");
     serde_json::to_string(&result).expect("pls")
 }

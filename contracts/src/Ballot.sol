@@ -11,7 +11,6 @@ contract Ballot {
     }
 
     struct Voter {
-        bool hasVoted;
         bytes[] votes;
     }
 
@@ -38,12 +37,10 @@ contract Ballot {
 
     function vote(bytes[] memory votes) public {
         Voter storage sender = voters[msg.sender];
-        require(!sender.hasVoted, "Already voted.");
         require(
             votes.length == proposals.length,
             "You need to give exactly as many votes as proposals"
         );
-        sender.hasVoted = true;
         sender.votes = votes;
 
         for (uint i = 0; i < proposals.length; i++) {
