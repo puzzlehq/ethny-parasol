@@ -74,9 +74,9 @@ RustBuffer uniffi_sunscreen_ballot_fn_func_get_proposal_tallys(RustBuffer contra
 );
 RustBuffer uniffi_sunscreen_ballot_fn_func_get_proposals(RustBuffer contract_address, RustBuffer public_key, RustBuffer private_key, RustBuffer wallet_key, RustCallStatus *_Nonnull out_status
 );
-void uniffi_sunscreen_ballot_fn_func_try_wallet(RustBuffer private_key, size_t uniffi_executor, UniFfiFutureCallbackRustBuffer _Nonnull uniffi_callback, void* _Nonnull uniffi_callback_data, RustCallStatus *_Nonnull out_status
+RustBuffer uniffi_sunscreen_ballot_fn_func_submit_votes(RustBuffer contract_address, RustBuffer public_key, RustBuffer private_key, RustBuffer wallet_key, RustBuffer votes, RustCallStatus *_Nonnull out_status
 );
-RustBuffer uniffi_sunscreen_ballot_fn_func_vote(RustBuffer contract_address, RustBuffer public_key, RustBuffer private_key, RustBuffer wallet_key, RustBuffer votes, RustCallStatus *_Nonnull out_status
+void uniffi_sunscreen_ballot_fn_func_try_wallet(RustBuffer private_key, size_t uniffi_executor, UniFfiFutureCallbackRustBuffer _Nonnull uniffi_callback, void* _Nonnull uniffi_callback_data, RustCallStatus *_Nonnull out_status
 );
 RustBuffer ffi_sunscreen_ballot_rustbuffer_alloc(int32_t size, RustCallStatus *_Nonnull out_status
 );
@@ -101,10 +101,10 @@ uint16_t uniffi_sunscreen_ballot_checksum_func_get_proposal_tallys(void
 uint16_t uniffi_sunscreen_ballot_checksum_func_get_proposals(void
     
 );
-uint16_t uniffi_sunscreen_ballot_checksum_func_try_wallet(void
+uint16_t uniffi_sunscreen_ballot_checksum_func_submit_votes(void
     
 );
-uint16_t uniffi_sunscreen_ballot_checksum_func_vote(void
+uint16_t uniffi_sunscreen_ballot_checksum_func_try_wallet(void
     
 );
 void ffi_sunscreen_ballot_foreign_executor_callback_set(UniFfiForeignExecutorCallback _Nonnull callback

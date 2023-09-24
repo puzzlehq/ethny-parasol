@@ -194,16 +194,15 @@ pub async fn try_wallet(private_key: String) -> String {
 
 #[tokio::main(flavor = "multi_thread", worker_threads = 10)]
 #[uniffi::export]
-pub async fn vote(contract_address: String,
+pub async fn submit_votes(contract_address: String,
             public_key: String,
             private_key: String,
             wallet_key: String,
             votes: Vec<u64>
         ) -> String {
     let keys = KeyStore::init(public_key, private_key, wallet_key).expect("failed to make keys");
-//    let ballot = keys.contract(Address::from_str(&contract_address).expect("no string")).expect("problem");
-    // let converted = votes.iter().map(|&x| Bytes::from(x.to_be_bytes())).collect::<Vec<_>>();
-    // let result = ballot.vote(converted).send().await.expect("some ").await.expect(" problem ");
-    // serde_json::to_string(&result).expect("pls")
-    "no".to_string()
+    let ballot = keys.contract(Address::from_str(&contract_address).expect("no string")).expect("problem");
+    let converted = votes.iter().map(|&x| Bytes::from(x.to_be_bytes())).collect::<Vec<_>>();
+    let result = ballot.vote(converted).send().await.expect("some ").await.expect(" problem ");
+    serde_json::to_string(&result).expect("pls")
 }

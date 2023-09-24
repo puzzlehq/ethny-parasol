@@ -554,6 +554,20 @@ public func getProposals(contractAddress: String, publicKey: String, privateKey:
     )
 }
 
+public func submitVotes(contractAddress: String, publicKey: String, privateKey: String, walletKey: String, votes: [UInt64]) -> String {
+    return try! FfiConverterString.lift(
+        try! rustCall {
+            uniffi_sunscreen_ballot_fn_func_submit_votes(
+                FfiConverterString.lower(contractAddress),
+                FfiConverterString.lower(publicKey),
+                FfiConverterString.lower(privateKey),
+                FfiConverterString.lower(walletKey),
+                FfiConverterSequenceUInt64.lower(votes), $0
+            )
+        }
+    )
+}
+
 public func tryWallet(privateKey: String) async -> String {
     var continuation: CheckedContinuation<String, Error>? = nil
     // Suspend the function and call the scaffolding function, passing it a callback handler from
@@ -573,20 +587,6 @@ public func tryWallet(privateKey: String) async -> String {
             )
         }
     }
-}
-
-public func vote(contractAddress: String, publicKey: String, privateKey: String, walletKey: String, votes: [UInt64]) -> String {
-    return try! FfiConverterString.lift(
-        try! rustCall {
-            uniffi_sunscreen_ballot_fn_func_vote(
-                FfiConverterString.lower(contractAddress),
-                FfiConverterString.lower(publicKey),
-                FfiConverterString.lower(privateKey),
-                FfiConverterString.lower(walletKey),
-                FfiConverterSequenceUInt64.lower(votes), $0
-            )
-        }
-    )
 }
 
 private enum InitializationResult {
@@ -620,10 +620,10 @@ private var initializationResult: InitializationResult {
     if uniffi_sunscreen_ballot_checksum_func_get_proposals() != 13440 {
         return InitializationResult.apiChecksumMismatch
     }
-    if uniffi_sunscreen_ballot_checksum_func_try_wallet() != 32175 {
+    if uniffi_sunscreen_ballot_checksum_func_submit_votes() != 48656 {
         return InitializationResult.apiChecksumMismatch
     }
-    if uniffi_sunscreen_ballot_checksum_func_vote() != 46948 {
+    if uniffi_sunscreen_ballot_checksum_func_try_wallet() != 32175 {
         return InitializationResult.apiChecksumMismatch
     }
 
