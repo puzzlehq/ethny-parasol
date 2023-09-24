@@ -63,8 +63,20 @@ typedef struct RustCallStatus {
 typedef void (*UniFfiFutureCallbackRustBuffer)(const void * _Nonnull, RustBuffer, RustCallStatus);
 
 // Scaffolding functions
+RustBuffer uniffi_sunscreen_ballot_fn_func_add_proposal(RustBuffer contract_address, RustBuffer name, RustBuffer contents, RustBuffer public_key, RustBuffer private_key, RustBuffer wallet_key, RustCallStatus *_Nonnull out_status
+);
+RustBuffer uniffi_sunscreen_ballot_fn_func_deploy_contract(RustBuffer public_key, RustBuffer private_key, RustBuffer wallet_key, RustCallStatus *_Nonnull out_status
+);
 RustBuffer uniffi_sunscreen_ballot_fn_func_generate_keys_local(RustCallStatus *_Nonnull out_status
     
+);
+RustBuffer uniffi_sunscreen_ballot_fn_func_get_proposal_tallys(RustBuffer contract_address, RustBuffer public_key, RustBuffer private_key, RustBuffer wallet_key, RustCallStatus *_Nonnull out_status
+);
+RustBuffer uniffi_sunscreen_ballot_fn_func_get_proposals(RustBuffer contract_address, RustBuffer public_key, RustBuffer private_key, RustBuffer wallet_key, RustCallStatus *_Nonnull out_status
+);
+void uniffi_sunscreen_ballot_fn_func_try_wallet(RustBuffer private_key, size_t uniffi_executor, UniFfiFutureCallbackRustBuffer _Nonnull uniffi_callback, void* _Nonnull uniffi_callback_data, RustCallStatus *_Nonnull out_status
+);
+RustBuffer uniffi_sunscreen_ballot_fn_func_vote(RustBuffer contract_address, RustBuffer public_key, RustBuffer private_key, RustBuffer wallet_key, RustBuffer votes, RustCallStatus *_Nonnull out_status
 );
 RustBuffer ffi_sunscreen_ballot_rustbuffer_alloc(int32_t size, RustCallStatus *_Nonnull out_status
 );
@@ -74,8 +86,28 @@ void ffi_sunscreen_ballot_rustbuffer_free(RustBuffer buf, RustCallStatus *_Nonnu
 );
 RustBuffer ffi_sunscreen_ballot_rustbuffer_reserve(RustBuffer buf, int32_t additional, RustCallStatus *_Nonnull out_status
 );
+uint16_t uniffi_sunscreen_ballot_checksum_func_add_proposal(void
+    
+);
+uint16_t uniffi_sunscreen_ballot_checksum_func_deploy_contract(void
+    
+);
 uint16_t uniffi_sunscreen_ballot_checksum_func_generate_keys_local(void
     
+);
+uint16_t uniffi_sunscreen_ballot_checksum_func_get_proposal_tallys(void
+    
+);
+uint16_t uniffi_sunscreen_ballot_checksum_func_get_proposals(void
+    
+);
+uint16_t uniffi_sunscreen_ballot_checksum_func_try_wallet(void
+    
+);
+uint16_t uniffi_sunscreen_ballot_checksum_func_vote(void
+    
+);
+void ffi_sunscreen_ballot_foreign_executor_callback_set(UniFfiForeignExecutorCallback _Nonnull callback
 );
 uint32_t ffi_sunscreen_ballot_uniffi_contract_version(void
     

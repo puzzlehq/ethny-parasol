@@ -294,6 +294,19 @@ private func uniffiCheckCallStatus(
 
 // Public interface members begin here.
 
+private struct FfiConverterUInt64: FfiConverterPrimitive {
+    typealias FfiType = UInt64
+    typealias SwiftType = UInt64
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> UInt64 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
 private struct FfiConverterString: FfiConverter {
     typealias SwiftType = String
     typealias FfiType = RustBuffer
@@ -332,10 +345,246 @@ private struct FfiConverterString: FfiConverter {
     }
 }
 
-public func generateKeysLocal() -> String {
+private let UNIFFI_RUST_TASK_CALLBACK_SUCCESS: Int8 = 0
+private let UNIFFI_RUST_TASK_CALLBACK_CANCELLED: Int8 = 1
+private let UNIFFI_FOREIGN_EXECUTOR_CALLBACK_SUCCESS: Int8 = 0
+private let UNIFFI_FOREIGN_EXECUTOR_CALLBACK_CANCELED: Int8 = 1
+private let UNIFFI_FOREIGN_EXECUTOR_CALLBACK_ERROR: Int8 = 2
+
+// Encapsulates an executor that can run Rust tasks
+//
+// On Swift, `Task.detached` can handle this we just need to know what priority to send it.
+public struct UniFfiForeignExecutor {
+    var priority: TaskPriority
+
+    public init(priority: TaskPriority) {
+        self.priority = priority
+    }
+
+    public init() {
+        priority = Task.currentPriority
+    }
+}
+
+private struct FfiConverterForeignExecutor: FfiConverter {
+    typealias SwiftType = UniFfiForeignExecutor
+    // Rust uses a pointer to represent the FfiConverterForeignExecutor, but we only need a u8.
+    // let's use `Int`, which is equivalent to `size_t`
+    typealias FfiType = Int
+
+    public static func lift(_ value: FfiType) throws -> SwiftType {
+        UniFfiForeignExecutor(priority: TaskPriority(rawValue: numericCast(value)))
+    }
+
+    public static func lower(_ value: SwiftType) -> FfiType {
+        numericCast(value.priority.rawValue)
+    }
+
+    public static func read(from _: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        fatalError("FfiConverterForeignExecutor.read not implemented yet")
+    }
+
+    public static func write(_: SwiftType, into _: inout [UInt8]) {
+        fatalError("FfiConverterForeignExecutor.read not implemented yet")
+    }
+}
+
+private func uniffiForeignExecutorCallback(executorHandle: Int, delayMs: UInt32, rustTask: UniFfiRustTaskCallback?, taskData: UnsafeRawPointer?) -> Int8 {
+    if let rustTask = rustTask {
+        let executor = try! FfiConverterForeignExecutor.lift(executorHandle)
+        Task.detached(priority: executor.priority) {
+            if delayMs != 0 {
+                let nanoseconds: UInt64 = numericCast(delayMs * 1_000_000)
+                try! await Task.sleep(nanoseconds: nanoseconds)
+            }
+            rustTask(taskData, UNIFFI_RUST_TASK_CALLBACK_SUCCESS)
+        }
+        return UNIFFI_FOREIGN_EXECUTOR_CALLBACK_SUCCESS
+    } else {
+        // When rustTask is null, we should drop the foreign executor.
+        // However, since its just a value type, we don't need to do anything here.
+        return UNIFFI_FOREIGN_EXECUTOR_CALLBACK_SUCCESS
+    }
+}
+
+private func uniffiInitForeignExecutor() {
+    ffi_sunscreen_ballot_foreign_executor_callback_set(uniffiForeignExecutorCallback)
+}
+
+private struct FfiConverterSequenceUInt64: FfiConverterRustBuffer {
+    typealias SwiftType = [UInt64]
+
+    public static func write(_ value: [UInt64], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterUInt64.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [UInt64] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [UInt64]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            try seq.append(FfiConverterUInt64.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+private struct FfiConverterSequenceString: FfiConverterRustBuffer {
+    typealias SwiftType = [String]
+
+    public static func write(_ value: [String], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterString.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [String]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            try seq.append(FfiConverterString.read(from: &buf))
+        }
+        return seq
+    }
+} // Callbacks for async functions
+
+// Callback handlers for an async calls.  These are invoked by Rust when the future is ready.  They
+// lift the return value or error and resume the suspended function.
+private func uniffiFutureCallbackHandlerString(
+    rawContinutation: UnsafeRawPointer,
+    returnValue: RustBuffer,
+    callStatus: RustCallStatus
+) {
+    let continuation = rawContinutation.bindMemory(
+        to: CheckedContinuation<String, Error>.self,
+        capacity: 1
+    )
+
+    do {
+        try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: nil)
+        try continuation.pointee.resume(returning: FfiConverterString.lift(returnValue))
+    } catch {
+        continuation.pointee.resume(throwing: error)
+    }
+}
+
+private func uniffiFutureCallbackHandlerSequenceString(
+    rawContinutation: UnsafeRawPointer,
+    returnValue: RustBuffer,
+    callStatus: RustCallStatus
+) {
+    let continuation = rawContinutation.bindMemory(
+        to: CheckedContinuation<[String], Error>.self,
+        capacity: 1
+    )
+
+    do {
+        try uniffiCheckCallStatus(callStatus: callStatus, errorHandler: nil)
+        try continuation.pointee.resume(returning: FfiConverterSequenceString.lift(returnValue))
+    } catch {
+        continuation.pointee.resume(throwing: error)
+    }
+}
+
+public func addProposal(contractAddress: String, name: String, contents: String, publicKey: String, privateKey: String, walletKey: String) -> String {
     return try! FfiConverterString.lift(
         try! rustCall {
+            uniffi_sunscreen_ballot_fn_func_add_proposal(
+                FfiConverterString.lower(contractAddress),
+                FfiConverterString.lower(name),
+                FfiConverterString.lower(contents),
+                FfiConverterString.lower(publicKey),
+                FfiConverterString.lower(privateKey),
+                FfiConverterString.lower(walletKey), $0
+            )
+        }
+    )
+}
+
+public func deployContract(publicKey: String, privateKey: String, walletKey: String) -> String {
+    return try! FfiConverterString.lift(
+        try! rustCall {
+            uniffi_sunscreen_ballot_fn_func_deploy_contract(
+                FfiConverterString.lower(publicKey),
+                FfiConverterString.lower(privateKey),
+                FfiConverterString.lower(walletKey), $0
+            )
+        }
+    )
+}
+
+public func generateKeysLocal() -> [String] {
+    return try! FfiConverterSequenceString.lift(
+        try! rustCall {
             uniffi_sunscreen_ballot_fn_func_generate_keys_local($0)
+        }
+    )
+}
+
+public func getProposalTallys(contractAddress: String, publicKey: String, privateKey: String, walletKey: String) -> [String] {
+    return try! FfiConverterSequenceString.lift(
+        try! rustCall {
+            uniffi_sunscreen_ballot_fn_func_get_proposal_tallys(
+                FfiConverterString.lower(contractAddress),
+                FfiConverterString.lower(publicKey),
+                FfiConverterString.lower(privateKey),
+                FfiConverterString.lower(walletKey), $0
+            )
+        }
+    )
+}
+
+public func getProposals(contractAddress: String, publicKey: String, privateKey: String, walletKey: String) -> [String] {
+    return try! FfiConverterSequenceString.lift(
+        try! rustCall {
+            uniffi_sunscreen_ballot_fn_func_get_proposals(
+                FfiConverterString.lower(contractAddress),
+                FfiConverterString.lower(publicKey),
+                FfiConverterString.lower(privateKey),
+                FfiConverterString.lower(walletKey), $0
+            )
+        }
+    )
+}
+
+public func tryWallet(privateKey: String) async -> String {
+    var continuation: CheckedContinuation<String, Error>? = nil
+    // Suspend the function and call the scaffolding function, passing it a callback handler from
+    // `AsyncTypes.swift`
+    //
+    // Make sure to hold on to a reference to the continuation in the top-level scope so that
+    // it's not freed before the callback is invoked.
+    return try! await withCheckedThrowingContinuation {
+        continuation = $0
+        try! rustCall {
+            uniffi_sunscreen_ballot_fn_func_try_wallet(
+                FfiConverterString.lower(privateKey),
+                FfiConverterForeignExecutor.lower(UniFfiForeignExecutor()),
+                uniffiFutureCallbackHandlerString,
+                &continuation,
+                $0
+            )
+        }
+    }
+}
+
+public func vote(contractAddress: String, publicKey: String, privateKey: String, walletKey: String, votes: [UInt64]) -> String {
+    return try! FfiConverterString.lift(
+        try! rustCall {
+            uniffi_sunscreen_ballot_fn_func_vote(
+                FfiConverterString.lower(contractAddress),
+                FfiConverterString.lower(publicKey),
+                FfiConverterString.lower(privateKey),
+                FfiConverterString.lower(walletKey),
+                FfiConverterSequenceUInt64.lower(votes), $0
+            )
         }
     )
 }
@@ -356,10 +605,29 @@ private var initializationResult: InitializationResult {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
-    if uniffi_sunscreen_ballot_checksum_func_generate_keys_local() != 42382 {
+    if uniffi_sunscreen_ballot_checksum_func_add_proposal() != 55074 {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if uniffi_sunscreen_ballot_checksum_func_deploy_contract() != 47773 {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if uniffi_sunscreen_ballot_checksum_func_generate_keys_local() != 22090 {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if uniffi_sunscreen_ballot_checksum_func_get_proposal_tallys() != 57347 {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if uniffi_sunscreen_ballot_checksum_func_get_proposals() != 13440 {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if uniffi_sunscreen_ballot_checksum_func_try_wallet() != 32175 {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if uniffi_sunscreen_ballot_checksum_func_vote() != 46948 {
         return InitializationResult.apiChecksumMismatch
     }
 
+    uniffiInitForeignExecutor()
     return InitializationResult.ok
 }
 
